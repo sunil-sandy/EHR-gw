@@ -59,7 +59,10 @@
     "vaul": "^0.9.6",
     "zod": "^3.24.1",
     "@emotion/is-prop-valid": "latest",
-    "framer-motion": "latest"
+    "@tanstack/react-query": "latest",
+    "framer-motion": "latest",
+    "axios": "latest",
+    "@tanstack/react-query-devtools": "latest"
   },
   "devDependencies": {
     "@types/node": "^22",

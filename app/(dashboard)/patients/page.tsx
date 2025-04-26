@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { SearchInput } from "@/components/search-input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -13,45 +14,49 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { patients, searchPatients } from "@/lib/data"
 import { ChevronLeft, ChevronRight, Download, Filter, MoreHorizontal, Plus } from "lucide-react"
 import Link from "next/link"
-import { useEffect, useState } from "react"
+import { usePatients, useDeletePatient } from "@/lib/hooks/use-patients"
+import { useDebounce } from "@/lib/hooks/use-debounce"
 
 export default function PatientsPage() {
-  const [filteredPatients, setFilteredPatients] = useState(patients)
   const [searchQuery, setSearchQuery] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
   const [statusFilter, setStatusFilter] = useState("all")
   const [genderFilter, setGenderFilter] = useState("all")
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true)
-      try {
-        const results = await searchPatients(searchQuery)
+  // Debounce search query to avoid too many API calls
+  const debouncedSearchQuery = useDebounce(searchQuery, 500)
 
-        // Apply filters
-        let filtered = results
+  // Prepare query params
+  const queryParams = {
+    search: debouncedSearchQuery,
+    status: statusFilter !== "all" ? statusFilter : undefined,
+    gender: genderFilter !== "all" ? genderFilter : undefined,
+    page,
+    page_size: pageSize,
+  }
 
-        if (statusFilter !== "all") {
-          filtered = filtered.filter((patient) => patient.status.toLowerCase() === statusFilter.toLowerCase())
-        }
+  // Fetch patients with React Query
+  const { data, isLoading, isError } = usePatients(queryParams)
+  const { mutate: deletePatient, isPending: isDeleting } = useDeletePatient()
 
-        if (genderFilter !== "all") {
-          filtered = filtered.filter((patient) => patient.gender.toLowerCase() === genderFilter.toLowerCase())
-        }
+  // Extract data
+  const patients = data?.results || []
+  const totalPatients = data?.count || 0
+  const totalPages = Math.ceil(totalPatients / pageSize)
 
-        setFilteredPatients(filtered)
-      } catch (error) {
-        console.error("Error searching patients:", error)
-      } finally {
-        setIsLoading(false)
-      }
+  const handleSearch = (query: string) => {
+    setSearchQuery(query)
+    setPage(1) // Reset to first page on new search
+  }
+
+  const handleDelete = (id: string) => {
+    if (window.confirm("Are you sure you want to delete this patient?")) {
+      deletePatient(id)
     }
-
-    fetchData()
-  }, [searchQuery, statusFilter, genderFilter])
+  }
 
   return (
     <div className="space-y-6">
@@ -79,7 +84,7 @@ export default function PatientsPage() {
         <CardContent>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-2">
-              <SearchInput placeholder="Search patients..." onChange={setSearchQuery} className="w-64" />
+              <SearchInput placeholder="Search patients..." onChange={handleSearch} className="w-64" />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm">
@@ -101,7 +106,13 @@ export default function PatientsPage() {
               </DropdownMenu>
             </div>
             <div className="flex items-center gap-2">
-              <Select defaultValue="10">
+              <Select
+                value={pageSize.toString()}
+                onValueChange={(value) => {
+                  setPageSize(Number(value))
+                  setPage(1) // Reset to first page when changing page size
+                }}
+              >
                 <SelectTrigger className="w-[80px]">
                   <SelectValue placeholder="10" />
                 </SelectTrigger>
@@ -140,14 +151,20 @@ export default function PatientsPage() {
                       </div>
                     </TableCell>
                   </TableRow>
-                ) : filteredPatients.length === 0 ? (
+                ) : isError ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="h-24 text-center text-red-500">
+                      Error loading patients. Please try again.
+                    </TableCell>
+                  </TableRow>
+                ) : patients.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={8} className="h-24 text-center">
                       No patients found
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredPatients.map((patient) => (
+                  patients.map((patient) => (
                     <TableRow key={patient.id}>
                       <TableCell className="font-medium">{patient.id}</TableCell>
                       <TableCell>{patient.name}</TableCell>
@@ -179,9 +196,19 @@ export default function PatientsPage() {
                                 View
                               </Link>
                             </DropdownMenuItem>
-                            <DropdownMenuItem>Edit</DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <Link href={`/patients/${patient.id}/edit`} className="w-full">
+                                Edit
+                              </Link>
+                            </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-red-600">Delete</DropdownMenuItem>
+                            <DropdownMenuItem
+                              className="text-red-600"
+                              onClick={() => handleDelete(patient.id)}
+                              disabled={isDeleting}
+                            >
+                              Delete
+                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
@@ -194,14 +221,25 @@ export default function PatientsPage() {
 
           <div className="mt-4 flex items-center justify-between">
             <div className="text-sm text-gray-500">
-              Showing 1 to {Math.min(filteredPatients.length, 10)} of {filteredPatients.length} entries
+              Showing {patients.length > 0 ? (page - 1) * pageSize + 1 : 0} to{" "}
+              {Math.min(page * pageSize, totalPatients)} of {totalPatients} entries
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" disabled>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1 || isLoading}
+              >
                 <ChevronLeft className="h-4 w-4" />
                 Previous
               </Button>
-              <Button variant="outline" size="sm" disabled>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page >= totalPages || isLoading}
+              >
                 Next
                 <ChevronRight className="h-4 w-4" />
               </Button>
