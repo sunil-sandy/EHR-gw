@@ -1,12 +1,13 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { Input } from "@/components/ui/input"
 import { Search, X } from "lucide-react"
 
 interface SearchInputProps {
   placeholder?: string
-  onSearch: (value: string) => void
+  onSearch?: (value: string) => void
+  onChange?: (value: string) => void
   className?: string
   debounceTime?: number
   initialValue?: string
@@ -15,6 +16,7 @@ interface SearchInputProps {
 export function SearchInput({
   placeholder = "Search...",
   onSearch,
+  onChange,
   className = "",
   debounceTime = 300,
   initialValue = "",
@@ -23,13 +25,26 @@ export function SearchInput({
   const [isFocused, setIsFocused] = useState(false)
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
 
+  // Create a handler function that calls either onSearch or onChange
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      if (onSearch) {
+        onSearch(value)
+      }
+      if (onChange) {
+        onChange(value)
+      }
+    },
+    [onSearch, onChange],
+  )
+
   useEffect(() => {
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current)
     }
 
     debounceTimerRef.current = setTimeout(() => {
-      onSearch(searchTerm)
+      handleSearchChange(searchTerm)
     }, debounceTime)
 
     return () => {
@@ -37,11 +52,11 @@ export function SearchInput({
         clearTimeout(debounceTimerRef.current)
       }
     }
-  }, [searchTerm, onSearch, debounceTime])
+  }, [searchTerm, handleSearchChange, debounceTime])
 
   const handleClear = () => {
     setSearchTerm("")
-    onSearch("")
+    handleSearchChange("")
   }
 
   return (
