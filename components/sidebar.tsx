@@ -22,6 +22,7 @@ import {
   X,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 type MenuItem = {
   title: string
@@ -179,131 +180,189 @@ export default function Sidebar() {
   }
 
   return (
-    <>
-      {/* Mobile Header */}
-      <div className="fixed top-0 z-40 w-full h-16 bg-white border-b md:hidden flex items-center justify-between px-4">
-        <div className="flex items-center">
-          <button
-            onClick={() => setIsOpen(true)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-md text-gray-500 hover:text-gray-900"
-          >
-            <span className="sr-only">Open sidebar</span>
-            <Menu className="h-6 w-6" />
-          </button>
-          <div className="ml-4 relative h-8 w-8">
-            <Image src="/logo.png" alt="Hospital Logo" fill className="object-contain" />
-          </div>
-          <span className="ml-2 text-lg font-semibold">HMS</span>
-        </div>
-      </div>
-
-      {/* Backdrop for mobile */}
-      <div
-        className={cn(
-          "fixed inset-0 z-40 bg-black/80 md:hidden transition-opacity",
-          isOpen ? "opacity-100" : "opacity-0 pointer-events-none",
-        )}
-        onClick={() => setIsOpen(false)}
-      />
-
-      {/* Sidebar */}
-      <div
-        className={cn(
-          "fixed top-0 left-0 z-50 h-full bg-[#f5f6fa] transition-all duration-300 ease-in-out",
-          isOpen ? "w-64" : "w-16",
-          isMobile && !isOpen && "-translate-x-full",
-        )}
-      >
-        {/* Sidebar Header */}
-        <div className="flex h-16 items-center justify-between border-b bg-white px-4">
-          <div className="flex items-center">
-            <div className="relative h-8 w-8 mr-2">
-              <Image src="/logo.png" alt="Hospital Logo" fill className="object-contain" />
-            </div>
-            {isOpen && <span className="text-lg font-semibold">HMS</span>}
-          </div>
+    <TooltipProvider delayDuration={300}>
+      <>
+        {/* Mobile Header */}
+        <div className="fixed top-0 z-40 w-full h-16 bg-white border-b md:hidden flex items-center justify-between px-4">
           <div className="flex items-center">
             <button
-              onClick={() => setIsOpen(!isOpen)}
+              onClick={() => setIsOpen(true)}
               className="inline-flex h-10 w-10 items-center justify-center rounded-md text-gray-500 hover:text-gray-900"
             >
-              <Menu className="h-5 w-5" />
+              <span className="sr-only">Open sidebar</span>
+              <Menu className="h-6 w-6" />
             </button>
-            {isMobile && (
-              <button
-                onClick={() => setIsOpen(false)}
-                className="ml-1 inline-flex h-10 w-10 items-center justify-center rounded-md text-gray-500 hover:text-gray-900 md:hidden"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            )}
+            <div className="ml-4 relative h-8 w-8">
+              <Image src="/logo.png" alt="Hospital Logo" fill className="object-contain" />
+            </div>
+            <span className="ml-2 text-lg font-semibold">HMS</span>
           </div>
         </div>
 
-        {/* Sidebar Content */}
-        <div className="overflow-y-auto py-4 px-2 h-[calc(100vh-4rem)]">
-          <nav className="space-y-1">
-            {menuItems.map((item) => (
-              <div key={item.title} className="mb-1">
-                {item.submenu ? (
-                  <>
-                    <button
-                      onClick={() => toggleMenu(item.title)}
-                      className={cn(
-                        "flex w-full items-center rounded-md px-3 py-2 text-sm font-medium",
-                        isActive(item.href)
-                          ? "bg-white text-[#5a67f6]"
-                          : "text-gray-700 hover:bg-white hover:text-[#5a67f6]",
-                      )}
-                    >
-                      <item.icon className="h-5 w-5" style={{ color: isActive(item.href) ? "#5a67f6" : item.color }} />
-                      {isOpen && (
-                        <>
-                          <span className="ml-3 flex-1 text-left">{item.title}</span>
-                          {openMenus[item.title] ? (
-                            <ChevronDown className="h-4 w-4" />
-                          ) : (
-                            <ChevronRight className="h-4 w-4" />
-                          )}
-                        </>
-                      )}
-                    </button>
-                    {openMenus[item.title] && isOpen && (
-                      <div className="mt-1 ml-4 pl-4 border-l border-gray-200">
-                        {item.submenu.map((subitem) => (
-                          <Link
-                            key={subitem.title}
-                            href={subitem.href}
-                            className={cn(
-                              "flex items-center rounded-md px-3 py-2 text-sm font-medium",
-                              isActive(subitem.href) ? "text-[#5a67f6]" : "text-gray-700 hover:text-[#5a67f6]",
-                            )}
-                          >
-                            {subitem.title}
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <Link
-                    href={item.href}
-                    className={cn(
-                      "flex items-center rounded-md px-3 py-2 text-sm font-medium",
-                      isActive(item.href)
-                        ? "bg-white text-[#5a67f6]"
-                        : "text-gray-700 hover:bg-white hover:text-[#5a67f6]",
-                    )}
-                  >
-                    <item.icon className="h-5 w-5" style={{ color: isActive(item.href) ? "#5a67f6" : item.color }} />
-                    {isOpen && <span className="ml-3">{item.title}</span>}
-                  </Link>
-                )}
+        {/* Backdrop for mobile */}
+        <div
+          className={cn(
+            "fixed inset-0 z-40 bg-black/80 md:hidden transition-opacity",
+            isOpen ? "opacity-100" : "opacity-0 pointer-events-none",
+          )}
+          onClick={() => setIsOpen(false)}
+        />
+
+        {/* Sidebar */}
+        <div
+          className={cn(
+            "fixed top-0 left-0 z-50 h-full bg-[#f5f6fa] transition-all duration-300 ease-in-out",
+            isOpen ? "w-64" : "w-16",
+            isMobile && !isOpen && "-translate-x-full",
+          )}
+        >
+          {/* Sidebar Header */}
+          <div className="flex h-16 items-center justify-between border-b bg-white px-4">
+            <div className="flex items-center">
+              <div className="relative h-8 w-8 mr-2">
+                <Image src="/logo.png" alt="Hospital Logo" fill className="object-contain" />
               </div>
-            ))}
-          </nav>
+              {isOpen && <span className="text-lg font-semibold">HMS</span>}
+            </div>
+            <div className="flex items-center">
+              <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-md text-gray-500 hover:text-gray-900"
+              >
+                <Menu className="h-5 w-5" />
+              </button>
+              {isMobile && (
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="ml-1 inline-flex h-10 w-10 items-center justify-center rounded-md text-gray-500 hover:text-gray-900 md:hidden"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Sidebar Content */}
+          <div className="overflow-y-auto py-4 px-2 h-[calc(100vh-4rem)]">
+            <nav className="space-y-1">
+              {menuItems.map((item) => (
+                <div key={item.title} className="mb-1">
+                  {item.submenu ? (
+                    <>
+                      {!isOpen ? (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              onClick={() => toggleMenu(item.title)}
+                              className={cn(
+                                "flex w-full items-center rounded-md px-3 py-2 text-sm font-medium",
+                                isActive(item.href)
+                                  ? "bg-white text-[#5a67f6]"
+                                  : "text-gray-700 hover:bg-white hover:text-[#5a67f6]",
+                              )}
+                            >
+                              <item.icon
+                                className="h-5 w-5"
+                                style={{ color: isActive(item.href) ? "#5a67f6" : item.color }}
+                              />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="right" className="bg-white text-gray-900 border shadow-md">
+                            {item.title}
+                          </TooltipContent>
+                        </Tooltip>
+                      ) : (
+                        <button
+                          onClick={() => toggleMenu(item.title)}
+                          className={cn(
+                            "flex w-full items-center rounded-md px-3 py-2 text-sm font-medium",
+                            isActive(item.href)
+                              ? "bg-white text-[#5a67f6]"
+                              : "text-gray-700 hover:bg-white hover:text-[#5a67f6]",
+                          )}
+                        >
+                          <item.icon
+                            className="h-5 w-5"
+                            style={{ color: isActive(item.href) ? "#5a67f6" : item.color }}
+                          />
+                          {isOpen && (
+                            <>
+                              <span className="ml-3 flex-1 text-left">{item.title}</span>
+                              {openMenus[item.title] ? (
+                                <ChevronDown className="h-4 w-4" />
+                              ) : (
+                                <ChevronRight className="h-4 w-4" />
+                              )}
+                            </>
+                          )}
+                        </button>
+                      )}
+                      {openMenus[item.title] && isOpen && (
+                        <div className="mt-1 ml-4 pl-4 border-l border-gray-200">
+                          {item.submenu.map((subitem) => (
+                            <Link
+                              key={subitem.title}
+                              href={subitem.href}
+                              className={cn(
+                                "flex items-center rounded-md px-3 py-2 text-sm font-medium",
+                                isActive(subitem.href) ? "text-[#5a67f6]" : "text-gray-700 hover:text-[#5a67f6]",
+                              )}
+                            >
+                              {subitem.title}
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      {!isOpen ? (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Link
+                              href={item.href}
+                              className={cn(
+                                "flex items-center rounded-md px-3 py-2 text-sm font-medium",
+                                isActive(item.href)
+                                  ? "bg-white text-[#5a67f6]"
+                                  : "text-gray-700 hover:bg-white hover:text-[#5a67f6]",
+                              )}
+                            >
+                              <item.icon
+                                className="h-5 w-5"
+                                style={{ color: isActive(item.href) ? "#5a67f6" : item.color }}
+                              />
+                            </Link>
+                          </TooltipTrigger>
+                          <TooltipContent side="right" className="bg-white text-gray-900 border shadow-md">
+                            {item.title}
+                          </TooltipContent>
+                        </Tooltip>
+                      ) : (
+                        <Link
+                          href={item.href}
+                          className={cn(
+                            "flex items-center rounded-md px-3 py-2 text-sm font-medium",
+                            isActive(item.href)
+                              ? "bg-white text-[#5a67f6]"
+                              : "text-gray-700 hover:bg-white hover:text-[#5a67f6]",
+                          )}
+                        >
+                          <item.icon
+                            className="h-5 w-5"
+                            style={{ color: isActive(item.href) ? "#5a67f6" : item.color }}
+                          />
+                          {isOpen && <span className="ml-3">{item.title}</span>}
+                        </Link>
+                      )}
+                    </>
+                  )}
+                </div>
+              ))}
+            </nav>
+          </div>
         </div>
-      </div>
-    </>
+      </>
+    </TooltipProvider>
   )
 }
