@@ -17,6 +17,31 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  // Add redirects for old paths to new paths
+  async redirects() {
+    return [
+      {
+        source: '/patients',
+        destination: '/manage-patients',
+        permanent: true,
+      },
+      {
+        source: '/patients/:path*',
+        destination: '/manage-patients/:path*',
+        permanent: true,
+      },
+      {
+        source: '/appointments',
+        destination: '/manage-appointments',
+        permanent: true,
+      },
+      {
+        source: '/appointments/:path*',
+        destination: '/manage-appointments/:path*',
+        permanent: true,
+      },
+    ]
+  },
 }
 
 export default nextConfig
