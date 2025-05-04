@@ -5,7 +5,7 @@ import "./globals.css"
 export const metadata = {
   title: "Hospital Management System",
   description: "A comprehensive hospital management system",
-    generator: 'v0.dev'
+    generator: ''
 }
 
 export default function RootLayout({
@@ -15,6 +15,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <link rel="icon" type="image/png" href="/favicon.png" />
+      </head>
       <body>
         <Providers>{children}</Providers>
       </body>

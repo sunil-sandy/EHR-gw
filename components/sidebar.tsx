@@ -20,6 +20,7 @@ import {
   ChevronRight,
   Menu,
   X,
+  PanelLeft,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -59,10 +60,6 @@ const menuItems: MenuItem[] = [
     href: "/appointments",
     icon: Calendar,
     color: "#00b894",
-    submenu: [
-      { title: "Schedule", href: "/appointments", color: "#00b894" },
-      { title: "Calendar View", href: "/appointments/calendar", color: "#00b894" },
-    ],
   },
   {
     title: "Inpatient",
@@ -125,17 +122,17 @@ const menuItems: MenuItem[] = [
   },
 ]
 
-export default function Sidebar() {
+export default function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (open: boolean) => void }) {
   const pathname = usePathname()
-  const [isOpen, setIsOpen] = useState(true)
   const [openMenus, setOpenMenus] = useState<{ [key: string]: boolean }>({})
   const [isMobile, setIsMobile] = useState(false)
 
   // Check if we're on mobile
   useEffect(() => {
     const checkIfMobile = () => {
-      setIsMobile(window.innerWidth < 1024)
-      if (window.innerWidth < 1024) {
+      const mobile = window.innerWidth < 1024
+      setIsMobile(mobile)
+      if (mobile) {
         setIsOpen(false)
       } else {
         setIsOpen(true)
@@ -148,7 +145,7 @@ export default function Sidebar() {
     return () => {
       window.removeEventListener("resize", checkIfMobile)
     }
-  }, [])
+  }, [setIsOpen])
 
   // Initialize open menus based on current path
   useEffect(() => {
@@ -187,7 +184,7 @@ export default function Sidebar() {
           <div className="flex items-center">
             <button
               onClick={() => setIsOpen(true)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-md text-gray-500 hover:text-gray-900"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-md text-gray-500 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#5a67f6]"
             >
               <span className="sr-only">Open sidebar</span>
               <Menu className="h-6 w-6" />
@@ -202,7 +199,7 @@ export default function Sidebar() {
         {/* Backdrop for mobile */}
         <div
           className={cn(
-            "fixed inset-0 z-40 bg-black/80 md:hidden transition-opacity",
+            "fixed inset-0 z-40 bg-black/80 md:hidden transition-opacity duration-300 ease-in-out",
             isOpen ? "opacity-100" : "opacity-0 pointer-events-none",
           )}
           onClick={() => setIsOpen(false)}
@@ -211,39 +208,40 @@ export default function Sidebar() {
         {/* Sidebar */}
         <div
           className={cn(
-            "fixed top-0 left-0 z-50 h-full bg-[#f5f6fa] transition-all duration-300 ease-in-out",
+            "fixed top-0 left-0 z-50 h-full bg-[#f5f6fa] transition-all duration-300 ease-in-out transform",
             isOpen ? "w-64" : "w-16",
             isMobile && !isOpen && "-translate-x-full",
           )}
         >
-          {/* Sidebar Header */}
-          <div className="flex h-16 items-center justify-between border-b bg-white px-4">
-            <div className="flex items-center">
-              <div className="relative h-8 w-8 mr-2">
+          {/* Toggle and Logo Row */}
+          <div className="flex items-center h-16 border-b bg-white px-4 gap-2 justify-between">
+            <div className="flex items-center gap-2">
+              <div className="relative h-8 w-8">
                 <Image src="/logo.png" alt="Hospital Logo" fill className="object-contain" />
               </div>
-              {isOpen && <span className="text-lg font-semibold">HMS</span>}
+              {isOpen && <span className="ml-2 text-lg font-semibold">HMS</span>}
             </div>
-            <div className="flex items-center">
+            {isOpen && (
               <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-md text-gray-500 hover:text-gray-900"
+                onClick={() => setIsOpen(false)}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-md text-[#5a67f6] hover:bg-[#f5f6fa] focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#5a67f6]"
               >
-                <Menu className="h-5 w-5" />
+                <PanelLeft className="h-6 w-6" />
               </button>
-              {isMobile && (
-                <button
-                  onClick={() => setIsOpen(false)}
-                  className="ml-1 inline-flex h-10 w-10 items-center justify-center rounded-md text-gray-500 hover:text-gray-900 md:hidden"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              )}
-            </div>
+            )}
           </div>
+          {/* Floating toggle for collapsed sidebar */}
+          {!isOpen && (
+            <button
+              onClick={() => setIsOpen(true)}
+              className="absolute top-4 left-1/2 -translate-x-1/2 z-50 inline-flex h-10 w-10 items-center justify-center rounded-md bg-white text-[#5a67f6] shadow hover:bg-[#f5f6fa] focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#5a67f6]"
+            >
+              <PanelLeft className="h-6 w-6" />
+            </button>
+          )}
 
           {/* Sidebar Content */}
-          <div className="overflow-y-auto py-4 px-2 h-[calc(100vh-4rem)]">
+          <div className="overflow-y-auto py-4 px-2 h-[calc(100vh-4rem)] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
             <nav className="space-y-1">
               {menuItems.map((item) => (
                 <div key={item.title} className="mb-1">
@@ -255,9 +253,9 @@ export default function Sidebar() {
                             <button
                               onClick={() => toggleMenu(item.title)}
                               className={cn(
-                                "flex w-full items-center rounded-md px-3 py-2 text-sm font-medium",
+                                "flex w-full items-center rounded-md px-3 py-2 text-sm font-medium transition-colors duration-200",
                                 isActive(item.href)
-                                  ? "bg-white text-[#5a67f6]"
+                                  ? "bg-white text-[#5a67f6] shadow-sm"
                                   : "text-gray-700 hover:bg-white hover:text-[#5a67f6]",
                               )}
                             >
@@ -275,9 +273,9 @@ export default function Sidebar() {
                         <button
                           onClick={() => toggleMenu(item.title)}
                           className={cn(
-                            "flex w-full items-center rounded-md px-3 py-2 text-sm font-medium",
+                            "flex w-full items-center rounded-md px-3 py-2 text-sm font-medium transition-colors duration-200",
                             isActive(item.href)
-                              ? "bg-white text-[#5a67f6]"
+                              ? "bg-white text-[#5a67f6] shadow-sm"
                               : "text-gray-700 hover:bg-white hover:text-[#5a67f6]",
                           )}
                         >
@@ -289,30 +287,37 @@ export default function Sidebar() {
                             <>
                               <span className="ml-3 flex-1 text-left">{item.title}</span>
                               {openMenus[item.title] ? (
-                                <ChevronDown className="h-4 w-4" />
+                                <ChevronDown className="h-4 w-4 transition-transform duration-200" />
                               ) : (
-                                <ChevronRight className="h-4 w-4" />
+                                <ChevronRight className="h-4 w-4 transition-transform duration-200" />
                               )}
                             </>
                           )}
                         </button>
                       )}
-                      {openMenus[item.title] && isOpen && (
+                      <div
+                        className={cn(
+                          "overflow-hidden transition-all duration-200 ease-in-out",
+                          openMenus[item.title] && isOpen ? "max-h-96" : "max-h-0",
+                        )}
+                      >
                         <div className="mt-1 ml-4 pl-4 border-l border-gray-200">
                           {item.submenu.map((subitem) => (
                             <Link
                               key={subitem.title}
-                              href={subitem.href}
+                              href={subitem.href as any}
                               className={cn(
-                                "flex items-center rounded-md px-3 py-2 text-sm font-medium",
-                                isActive(subitem.href) ? "text-[#5a67f6]" : "text-gray-700 hover:text-[#5a67f6]",
+                                "flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors duration-200",
+                                isActive(subitem.href)
+                                  ? "text-[#5a67f6] bg-white/50"
+                                  : "text-gray-700 hover:text-[#5a67f6] hover:bg-white/50",
                               )}
                             >
                               {subitem.title}
                             </Link>
                           ))}
                         </div>
-                      )}
+                      </div>
                     </>
                   ) : (
                     <>
@@ -320,11 +325,11 @@ export default function Sidebar() {
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Link
-                              href={item.href}
+                              href={item.href as any}
                               className={cn(
-                                "flex items-center rounded-md px-3 py-2 text-sm font-medium",
+                                "flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors duration-200",
                                 isActive(item.href)
-                                  ? "bg-white text-[#5a67f6]"
+                                  ? "bg-white text-[#5a67f6] shadow-sm"
                                   : "text-gray-700 hover:bg-white hover:text-[#5a67f6]",
                               )}
                             >
@@ -340,11 +345,11 @@ export default function Sidebar() {
                         </Tooltip>
                       ) : (
                         <Link
-                          href={item.href}
+                          href={item.href as any}
                           className={cn(
-                            "flex items-center rounded-md px-3 py-2 text-sm font-medium",
+                            "flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors duration-200",
                             isActive(item.href)
-                              ? "bg-white text-[#5a67f6]"
+                              ? "bg-white text-[#5a67f6] shadow-sm"
                               : "text-gray-700 hover:bg-white hover:text-[#5a67f6]",
                           )}
                         >

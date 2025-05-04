@@ -20,6 +20,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { appointments, searchAppointments } from "@/lib/data"
 import { Calendar, Clock, Filter, Plus } from "lucide-react"
 import { useEffect, useState } from "react"
+import Link from "next/link"
+import { Badge } from "@/components/ui/badge"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { useRef } from "react"
 
 export default function AppointmentsPage() {
   const [filteredAppointments, setFilteredAppointments] = useState(appointments)
@@ -60,292 +64,188 @@ export default function AppointmentsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Appointments</h1>
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button className="bg-[#5a67f6] hover:bg-[#4550e6]">
-              <Plus className="mr-2 h-4 w-4" />
-              New Appointment
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle>New Appointment</DialogTitle>
-              <DialogDescription>Schedule a new appointment for a patient</DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="patient">Patient</Label>
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select patient" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="john-smith">John Smith</SelectItem>
-                    <SelectItem value="emily-davis">Emily Davis</SelectItem>
-                    <SelectItem value="robert-wilson">Robert Wilson</SelectItem>
-                  </SelectContent>
-                </Select>
+      {/* Top summary cards and actions */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card className="shadow-none border bg-[#f8fafc]">
+            <CardContent className="py-4 flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center justify-center rounded-full bg-[#f5f6fa] p-2">
+                  <span className="text-xl">🤍</span>
+                </span>
+                <span className="font-semibold text-gray-700">All Appointments</span>
+                <span className="ml-auto text-xs text-gray-400 cursor-pointer">View All</span>
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="doctor">Doctor</Label>
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select doctor" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="dr-wilson">Dr. Sarah Wilson</SelectItem>
-                    <SelectItem value="dr-brown">Dr. Michael Brown</SelectItem>
-                    <SelectItem value="dr-lee">Dr. Jennifer Lee</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="flex gap-6 mt-2">
+                <div className="flex flex-col"><span className="text-lg font-bold">450</span><span className="text-xs text-gray-400">Scheduled</span></div>
+                <div className="flex flex-col"><span className="text-lg font-bold">5</span><span className="text-xs text-gray-400">Active</span></div>
+                <div className="flex flex-col"><span className="text-lg font-bold">320</span><span className="text-xs text-gray-400">Completed</span></div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="date">Date</Label>
-                  <div className="relative">
-                    <Input id="date" placeholder="Select date" />
-                    <Button variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 text-gray-400">
-                      <Calendar className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="time">Time</Label>
-                  <div className="relative">
-                    <Input id="time" placeholder="Select time" />
-                    <Button variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 text-gray-400">
-                      <Clock className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
+            </CardContent>
+          </Card>
+          <Card className="shadow-none border bg-[#f8fafc]">
+            <CardContent className="py-4 flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center justify-center rounded-full bg-[#f5f6fa] p-2">
+                  <span className="text-xl">💲</span>
+                </span>
+                <span className="font-semibold text-gray-700">Billing</span>
+                <span className="ml-auto text-xs text-gray-400 cursor-pointer">View All</span>
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="notes">Notes</Label>
-                <Input id="notes" placeholder="Add notes (optional)" />
+              <div className="flex gap-6 mt-2">
+                <div className="flex flex-col"><span className="text-lg font-bold">30</span><span className="text-xs text-gray-400">Total Earning</span></div>
+                <div className="flex flex-col"><span className="text-lg font-bold">20</span><span className="text-xs text-gray-400">Settled</span></div>
+                <div className="flex flex-col"><span className="text-lg font-bold">5</span><span className="text-xs text-gray-400">To be Settled</span></div>
               </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline">Cancel</Button>
-              <Button className="bg-[#5a67f6] hover:bg-[#4550e6]">Save</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+            </CardContent>
+          </Card>
+          <Card className="shadow-none border bg-[#f8fafc]">
+            <CardContent className="py-4 flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center justify-center rounded-full bg-[#f5f6fa] p-2">
+                  <span className="text-xl">🤍</span>
+                </span>
+                <span className="font-semibold text-gray-700">Lab Reports</span>
+                <span className="ml-auto text-xs text-gray-400 cursor-pointer">View All</span>
+              </div>
+              <div className="flex gap-6 mt-2">
+                <div className="flex flex-col"><span className="text-lg font-bold">20%</span><span className="text-xs text-gray-400">All Bookings</span></div>
+                <div className="flex flex-col"><span className="text-lg font-bold">30</span><span className="text-xs text-gray-400">Sample collected</span></div>
+                <div className="flex flex-col"><span className="text-lg font-bold">0</span><span className="text-xs text-gray-400">Reports Generated</span></div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+        <div className="flex flex-col gap-2 md:gap-4 md:flex-row md:items-center">
+          <Button className="bg-[#5a67f6] hover:bg-[#4550e6] w-full md:w-auto">
+            + Create New Appointment
+          </Button>
+          <Button className="bg-[#5a67f6] hover:bg-[#4550e6] w-full md:w-auto">
+            + Add New Patient
+          </Button>
+        </div>
       </div>
 
-      <Tabs defaultValue="today">
-        <TabsList className="grid w-full grid-cols-4 mb-4">
-          <TabsTrigger value="today">Today</TabsTrigger>
-          <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
-          <TabsTrigger value="completed">Completed</TabsTrigger>
-          <TabsTrigger value="cancelled">Cancelled</TabsTrigger>
-        </TabsList>
-        <TabsContent value="today">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle>Today's Appointments</CardTitle>
-              <CardDescription>Manage and view today's appointments</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-center gap-2">
-                  <SearchInput placeholder="Search appointments..." onChange={setSearchQuery} className="w-64" />
-                  <Button variant="outline" size="sm" onClick={() => setStatusFilter("all")}>
-                    <Filter className="mr-2 h-4 w-4" />
-                    All
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={() => setStatusFilter("confirmed")}>
-                    Confirmed
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={() => setStatusFilter("waiting")}>
-                    Waiting
-                  </Button>
+      {/* Appointment List Controls */}
+      <Card className="p-4 bg-[#f8fafc] border shadow-none">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="flex items-center gap-2 flex-1">
+            <Input placeholder="Search" className="w-64" />
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className="flex gap-2">
+                  <Filter className="h-4 w-4" /> Filter
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80">
+                <div className="font-semibold mb-2">By Date</div>
+                <div className="grid grid-cols-2 gap-2 mb-2">
+                  <label className="flex items-center gap-2 text-sm"><input type="checkbox" /> This Week</label>
+                  <label className="flex items-center gap-2 text-sm"><input type="checkbox" /> Last Week</label>
+                  <label className="flex items-center gap-2 text-sm"><input type="checkbox" /> This Month</label>
+                  <label className="flex items-center gap-2 text-sm"><input type="checkbox" /> Last Month</label>
+                  <label className="flex items-center gap-2 text-sm"><input type="checkbox" /> This Year</label>
+                  <label className="flex items-center gap-2 text-sm"><input type="checkbox" /> Last Year</label>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium">July 12, 2023</span>
-                  <Button variant="outline" size="sm">
-                    <Calendar className="h-4 w-4" />
-                  </Button>
+                <label className="flex items-center gap-2 text-sm mb-2"><input type="checkbox" /> Date Range</label>
+                <div className="flex gap-2 mb-2">
+                  <Input type="date" className="w-1/2" />
+                  <Input type="date" className="w-1/2" />
                 </div>
-              </div>
+                <Button className="w-full bg-[#5a67f6] hover:bg-[#4550e6]">Filter</Button>
+              </PopoverContent>
+            </Popover>
+            <Button variant="outline" size="sm">Share</Button>
+            <Link href="/appointments/calendar" passHref legacyBehavior>
+              <Button variant="outline" size="sm">
+                Calendar View
+              </Button>
+            </Link>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-500">Calendar View</span>
+          </div>
+        </div>
+      </Card>
 
-              <div className="mt-4 rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>ID</TableHead>
-                      <TableHead>Patient</TableHead>
-                      <TableHead>Doctor</TableHead>
-                      <TableHead>Department</TableHead>
-                      <TableHead>Time</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {isLoading ? (
-                      <TableRow>
-                        <TableCell colSpan={7} className="h-24 text-center">
-                          <div className="flex items-center justify-center">
-                            <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-[#5a67f6]"></div>
-                            <span className="ml-2">Loading...</span>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ) : filteredAppointments.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={7} className="h-24 text-center">
-                          No appointments found
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      filteredAppointments.map((appointment) => (
-                        <TableRow key={appointment.id}>
-                          <TableCell className="font-medium">{appointment.id}</TableCell>
-                          <TableCell>{appointment.patient}</TableCell>
-                          <TableCell>{appointment.doctor}</TableCell>
-                          <TableCell>{appointment.department}</TableCell>
-                          <TableCell>{appointment.time}</TableCell>
-                          <TableCell>
-                            <span
-                              className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                                appointment.status === "Confirmed"
-                                  ? "bg-green-100 text-green-800"
-                                  : appointment.status === "Completed"
-                                    ? "bg-blue-100 text-blue-800"
-                                    : appointment.status === "Waiting"
-                                      ? "bg-yellow-100 text-yellow-800"
-                                      : "bg-red-100 text-red-800"
-                              }`}
-                            >
-                              {appointment.status}
-                            </span>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <Button variant="outline" size="sm">
-                              View
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="upcoming">
-          <Card>
-            <CardHeader>
-              <CardTitle>Upcoming Appointments</CardTitle>
-              <CardDescription>View and manage upcoming appointments</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {appointments.slice(5, 10).map((appointment) => (
-                  <div key={appointment.id} className="flex items-center justify-between rounded-md border p-4">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{appointment.patient}</span>
-                        <span
-                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-green-100 text-green-800`}
-                        >
-                          Confirmed
-                        </span>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        {appointment.doctor} • {appointment.department} • {appointment.date} • {appointment.time}
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm">
-                        Reschedule
-                      </Button>
-                      <Button variant="outline" size="sm" className="bg-[#5a67f6] text-white hover:bg-[#4550e6]">
-                        View
-                      </Button>
-                    </div>
-                  </div>
+      {/* Appointment List Table */}
+      <Card className="mt-4">
+        <CardHeader>
+          <CardTitle>Appointment List</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead><input type="checkbox" /></TableHead>
+                  <TableHead>Patient Name</TableHead>
+                  <TableHead>Date & Time</TableHead>
+                  <TableHead>Doctor Name</TableHead>
+                  <TableHead>Patient ID</TableHead>
+                  <TableHead>Contact</TableHead>
+                  <TableHead>Action</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {/* Example rows, replace with real data */}
+                {filteredAppointments.slice(0, 10).map((a, i) => (
+                  <TableRow key={i}>
+                    <TableCell><input type="checkbox" /></TableCell>
+                    <TableCell>{a.patient}</TableCell>
+                    <TableCell>12 Aug 2022 - 12:25 am</TableCell>
+                    <TableCell>Dr. Rajesh</TableCell>
+                    <TableCell>GMO21510 <span className="ml-1 cursor-pointer text-gray-400">📋</span></TableCell>
+                    <TableCell>924785421</TableCell>
+                    <TableCell>
+                      <Select defaultValue="Checked Out">
+                        <SelectTrigger className="w-32">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Checked Out">Checked Out</SelectItem>
+                          <SelectItem value="Check-In">Check-In</SelectItem>
+                          <SelectItem value="Re-Schedule">Re-Schedule</SelectItem>
+                          <SelectItem value="Completed">Completed</SelectItem>
+                          <SelectItem value="Pending">Pending</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                    <TableCell>
+                      {/* Status badge logic */}
+                      {i % 3 === 0 && <Badge className="bg-green-100 text-green-800">Completed</Badge>}
+                      {i % 3 === 1 && <Badge className="bg-blue-100 text-blue-800">In-Progress</Badge>}
+                      {i % 3 === 2 && <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>}
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="completed">
-          <Card>
-            <CardHeader>
-              <CardTitle>Completed Appointments</CardTitle>
-              <CardDescription>View history of completed appointments</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {appointments
-                  .filter((a) => a.status === "Completed")
-                  .map((appointment) => (
-                    <div key={appointment.id} className="flex items-center justify-between rounded-md border p-4">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{appointment.patient}</span>
-                          <span
-                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-800`}
-                          >
-                            Completed
-                          </span>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          {appointment.doctor} • {appointment.department} • {appointment.date} • {appointment.time}
-                        </p>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm">
-                          View Report
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="cancelled">
-          <Card>
-            <CardHeader>
-              <CardTitle>Cancelled Appointments</CardTitle>
-              <CardDescription>View history of cancelled appointments</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {appointments
-                  .filter((a) => a.status === "Cancelled")
-                  .map((appointment) => (
-                    <div key={appointment.id} className="flex items-center justify-between rounded-md border p-4">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{appointment.patient}</span>
-                          <span
-                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-red-100 text-red-800`}
-                          >
-                            Cancelled
-                          </span>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          {appointment.doctor} • {appointment.department} • {appointment.date} • {appointment.time}
-                        </p>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm">
-                          Reschedule
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+              </TableBody>
+            </Table>
+          </div>
+          <div className="flex items-center justify-between mt-4">
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <Select defaultValue="10">
+                <SelectTrigger className="w-16">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="20">20</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                </SelectContent>
+              </Select>
+              Items per page
+              <span className="ml-2">1-10 of 200 items</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm">1</Button>
+              <Button variant="outline" size="sm">of 44 pages</Button>
+              <Button variant="outline" size="sm">&gt;</Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
